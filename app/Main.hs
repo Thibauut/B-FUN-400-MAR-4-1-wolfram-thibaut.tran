@@ -71,7 +71,8 @@ getCellules n [a, b, c] = ruleBits !! (7 - (4*a + 2*b + c))
         ruleBits = ruleToBits (Flags { rule = Just n })
 
 algo :: Flags -> IO ()
-algo flags = print flags
+algo flags = exitWith (ExitSuccess)
+-- algo flags = print flags
             -- print (ruleToBits flags) >>
             -- (let r = fromJust (rule flags)
             -- in print (getCellules r [1, 1, 1]))
