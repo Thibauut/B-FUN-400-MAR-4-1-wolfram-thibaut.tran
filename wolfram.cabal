@@ -38,6 +38,7 @@ library
 executable wolfram-exe
   main-is: Main.hs
   other-modules:
+      Flags
       Paths_wolfram
   hs-source-dirs:
       app
