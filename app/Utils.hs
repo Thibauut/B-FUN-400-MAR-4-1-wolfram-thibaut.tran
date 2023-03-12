@@ -23,6 +23,6 @@ ruleTo8Bits _ = []
 
 listToString :: [Int] -> String
 listToString [] = ""
-listToString (x:xs) | x == 0 = " " ++ listToString xs
-                    | x == 1 = "*" ++ listToString xs
-                    | otherwise = listToString xs
+listToString (0:xs) = " " ++ listToString xs
+listToString (1:xs) = "*" ++ listToString xs
+listToString (x:xs) = listToString xs

@@ -15,29 +15,22 @@ import Utils
 import Algo
 
 recursAlgo :: [Int] -> [Int] -> Int -> Int -> Int -> IO ()
-recursAlgo rule8Bits initialLine nbLines lineSize startLine = do
-    when (nbLines == 0) $ exitWith (ExitSuccess)
+recursAlgo rule8Bits initialLine 0 lineSize startLine =
+    exitWith (ExitSuccess)
+recursAlgo rule8Bits initialLine nbLines lineSize startLine =
     let newNbLines = if startLine <= 0 then nbLines - 1 else nbLines
-    when (startLine <= 0) $ putStrLn (listToString initialLine)
-    let ruleCheck = wolframRule rule8Bits
-    let newMap = applyWolframRule ruleCheck initialLine
+        ruleCheck = wolframRule rule8Bits
+        newMap = applyWolframRule ruleCheck initialLine
+    in when (startLine <= 0) (putStrLn (listToString initialLine) >>
+    recursAlgo rule8Bits newMap newNbLines lineSize (startLine - 1)) >>
     recursAlgo rule8Bits newMap newNbLines lineSize (startLine - 1)
 
-verifLineZero :: Flags -> IO ()
-verifLineZero flags = do
-                let numLines = case nbLines flags of
-                            Just n -> Just (n)
-                            Nothing -> Nothing
-                if numLines /= Nothing then do
-                    when ((fromJust numLines) == 0) $ exitWith (ExitSuccess)
-                else return ()
 
 startAlgo :: [Int] -> [Int] -> Maybe Int -> Int -> Int -> IO ()
-startAlgo intLine r8Bits numLines len stLine = if numLines /= Nothing then do
-                recursAlgo r8Bits intLine (fromJust numLines) len stLine
-            else if numLines == Nothing then do
-                recursAlgo r8Bits intLine (-1) len stLine
-            else return ()
+startAlgo intLine r8Bits Nothing len stLine =
+    recursAlgo r8Bits intLine (-1) len stLine
+startAlgo intLine r8Bits numLines len stLine =
+    recursAlgo r8Bits intLine (fromJust numLines) len stLine
 
 initFirstLine :: Flags -> [Int]
 initFirstLine flags = let rule8Bits = fromJust (rule flags)
@@ -54,13 +47,11 @@ algo :: Flags -> IO ()
 algo flags =
         validRule flags >>
         let initialLine = initFirstLine flags
-        in do
-            verifLineZero flags
-            let rule8Bits = ruleTo8Bits flags
+        in  let rule8Bits = ruleTo8Bits flags
                 numLines = getNumLines flags
                 startLine = fromJust (start flags)
                 lineSize = length initialLine
-            startAlgo initialLine rule8Bits numLines lineSize startLine
+            in startAlgo initialLine rule8Bits numLines lineSize startLine
 
 
 main :: IO ()
