@@ -5,11 +5,11 @@
 -- Flags.hs
 --}
 
-module Flags (Flags(..), defaultFlags, checkFlags) where
+module Flags (Flags(..), defaultFlags, checkFlags, mustFlags, validRule) where
 import Text.Read (readMaybe)
 import Debug.Trace (trace)
+import System.Exit (exitWith, ExitCode(ExitSuccess, ExitFailure))
 
--- flags structure
 data Flags = Flags {
     rule :: Maybe Int,
     start :: Maybe Int,
@@ -19,9 +19,13 @@ data Flags = Flags {
 }
 
 instance Show Flags where
-    show flags = "rule: " ++ show (rule flags) ++ "\n" ++ "start: " ++ show (start flags) ++ "\n" ++ "lines: " ++ show (nbLines flags) ++ "\n" ++ "window: " ++ show (window flags) ++ "\n" ++ "move: " ++ show (move flags)
+  show flags =
+    "rule: " ++ show (rule flags) ++ "\n" ++
+    "start: " ++ show (start flags) ++ "\n" ++
+    "lines: " ++ show (nbLines flags) ++ "\n" ++
+    "window: " ++ show (window flags) ++ "\n" ++
+    "move: " ++ show (move flags)
 
--- default flags
 defaultFlags :: Flags
 defaultFlags = Flags {
     rule = Nothing,
@@ -47,7 +51,7 @@ checkFlags4 (x:xs) flags = case x of
     "--window" -> case xs of
         [] -> trace "Invalid argument." $ Nothing
         (y:ys) -> case readMaybe y of
-            Just n -> checkFlags ys (flags { start = Just n })
+            Just n -> checkFlags ys (flags { window = Just n })
             Nothing -> trace "Invalid argument." $ Nothing
     _ -> checkFlags5 (x:xs) flags
 
@@ -57,7 +61,7 @@ checkFlags3 (x:xs) flags = case x of
     "--lines" -> case xs of
         [] -> trace "Invalid argument." $ Nothing
         (y:ys) -> case readMaybe y of
-            Just n -> checkFlags ys (flags { start = Just n })
+            Just n -> checkFlags ys (flags { nbLines = Just n })
             Nothing -> trace "Invalid argument." $ Nothing
     _ -> checkFlags4 (x:xs) flags
 
@@ -80,3 +84,16 @@ checkFlags (x:xs) flags = case x of
             Just n -> checkFlags ys (flags { rule = Just n })
             Nothing -> trace "Invalid argument." $ Nothing
     _ -> checkFlags2 (x:xs) flags
+
+mustFlags :: [String] -> IO ()
+mustFlags args =
+    if "--rule" `elem` args
+    then return ()
+    else trace "usage: ./wolfram --rule [value]" $ exitWith (ExitFailure 84)
+
+validRule :: Flags -> IO ()
+validRule (Flags { rule = Nothing }) =
+    trace "Invalid rule." $ exitWith (ExitFailure 84)
+validRule (Flags { rule = Just n }) = if n >= 0 && n <= 255
+    then return ()
+    else trace "Invalid rule." $ exitWith (ExitFailure 84)
